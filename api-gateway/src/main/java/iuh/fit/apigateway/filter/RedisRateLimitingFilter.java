@@ -1,6 +1,10 @@
 package iuh.fit.apigateway.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import iuh.fit.shared.api.ApiError;
+import iuh.fit.shared.api.ApiResponse;
+import iuh.fit.shared.trace.TraceIdConstants;
+import iuh.fit.shared.trace.TraceIdContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +22,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Map;
 
 @Component
@@ -71,14 +74,17 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
             response.setCharacterEncoding("UTF-8");
             response.setHeader(HttpHeaders.RETRY_AFTER, "60");
 
-            Map<String, Object> payload = Map.of(
-                    "timestamp", Instant.now().toString(),
-                    "success", false,
-                    "message", "Too many requests. Please retry after 1 minute.",
-                    "error", Map.of(
-                            "code", "RATE_LIMIT_EXCEEDED",
-                            "detail", "Maximum %d requests per minute exceeded".formatted(requestsPerMinute)
-                    )
+            ApiError error = new ApiError(
+                "RATE_LIMIT_EXCEEDED",
+                "Maximum %d requests per minute exceeded".formatted(requestsPerMinute),
+                Map.of("retryAfterSeconds", 60),
+                null
+            );
+
+            ApiResponse<Void> payload = ApiResponse.failure(
+                "Too many requests. Please retry after 1 minute.",
+                error,
+                resolveTraceId(request)
             );
 
             response.getWriter().write(objectMapper.writeValueAsString(payload));
@@ -103,5 +109,22 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
         }
 
         return request.getRemoteAddr() == null ? "unknown" : request.getRemoteAddr();
+    }
+
+    private static String resolveTraceId(HttpServletRequest request) {
+        if (request != null) {
+            Object attr = request.getAttribute(TraceIdConstants.REQUEST_ATTRIBUTE);
+            if (attr instanceof String traceId && !traceId.isBlank()) {
+                return traceId;
+            }
+
+            String headerTraceId = request.getHeader(TraceIdConstants.HEADER_NAME);
+            if (headerTraceId != null && !headerTraceId.isBlank()) {
+                return headerTraceId;
+            }
+        }
+
+        String contextTraceId = TraceIdContext.get();
+        return (contextTraceId == null || contextTraceId.isBlank()) ? null : contextTraceId;
     }
 }

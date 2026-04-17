@@ -140,21 +140,6 @@ eureka:
   instance:
     prefer-ip-address: true
 
-resilience4j:
-  retry:
-    instances:
-      gatewayRetry:
-        maxAttempts: 3
-        waitDuration: 1s
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2
-  ratelimiter:
-    instances:
-      gatewayClientRateLimiter:
-        limitForPeriod: 5
-        limitRefreshPeriod: 60s
-        timeoutDuration: 0
-
 management:
   endpoints:
     web:

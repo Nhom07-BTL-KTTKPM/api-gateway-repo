@@ -1,4 +1,4 @@
-spring:
+﻿spring:
   application:
     name: api-gateway
   data:
@@ -9,124 +9,123 @@ spring:
       timeout: ${REDIS_TIMEOUT:2s}
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: auth-service
-            uri: lb://AUTH-SERVICE
-            predicates:
-              - Path=/api/v1/auth/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-                  backoff:
-                    firstBackoff: 1s
-                    maxBackoff: 5s
-                    factor: 2
-                    basedOnPreviousValue: false
-              - name: CircuitBreaker
-                args:
-                  id: authCircuitBreaker
-                  fallbackUri: forward:/fallback/auth-service
+      server:
+        webmvc:
+          routes:
+            - id: auth-service-critical
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/v1/auth/login,/api/v1/auth/register,/api/v1/auth/refresh,/api/v1/auth/logout
 
-          - id: user-service
-            uri: lb://USER-SERVICE
-            predicates:
-              - Path=/api/v1/user/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-              - name: CircuitBreaker
-                args:
-                  id: userCircuitBreaker
-                  fallbackUri: forward:/fallback/user-service
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/v1/auth/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                    backoff:
+                      firstBackoff: 1s
+                      maxBackoff: 5s
+                      factor: 2
+                      basedOnPreviousValue: false
+                - name: CircuitBreaker
+                  args:
+                    id: authCircuitBreaker
+                    fallbackUri: forward:/fallback/auth-service
 
-          - id: catalog-service
-            uri: lb://CATALOG-SERVICE
-            predicates:
-              - Path=/api/v1/catalog/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-              - name: CircuitBreaker
-                args:
-                  id: catalogCircuitBreaker
-                  fallbackUri: forward:/fallback/catalog-service
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/user/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: userCircuitBreaker
+                    fallbackUri: forward:/fallback/user-service
 
-          - id: cart-service
-            uri: lb://CART-SERVICE
-            predicates:
-              - Path=/api/v1/cart/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-              - name: CircuitBreaker
-                args:
-                  id: cartCircuitBreaker
-                  fallbackUri: forward:/fallback/cart-service
+            - id: catalog-service
+              uri: lb://CATALOG-SERVICE
+              predicates:
+                - Path=/api/v1/catalog/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: catalogCircuitBreaker
+                    fallbackUri: forward:/fallback/catalog-service
 
-          - id: order-service
-            uri: lb://ORDER-SERVICE
-            predicates:
-              - Path=/api/v1/order/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-              - name: CircuitBreaker
-                args:
-                  id: orderCircuitBreaker
-                  fallbackUri: forward:/fallback/order-service
+            - id: cart-service
+              uri: lb://CART-SERVICE
+              predicates:
+                - Path=/api/v1/cart/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: cartCircuitBreaker
+                    fallbackUri: forward:/fallback/cart-service
 
-          - id: ai-service
-            uri: lb://AI-SERVICE
-            predicates:
-              - Path=/api/v1/ai/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-              - name: CircuitBreaker
-                args:
-                  id: aiCircuitBreaker
-                  fallbackUri: forward:/fallback/ai-service
+            - id: order-service
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/api/v1/order/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: orderCircuitBreaker
+                    fallbackUri: forward:/fallback/order-service
 
-          - id: notification-service
-            uri: lb://NOTIFICATION-SERVICE
-            predicates:
-              - Path=/api/v1/notification/**
-            filters:
-              - StripPrefix=2
-              - name: Retry
-                args:
-                  retries: 3
-                  methods: GET,POST,PUT,DELETE
-                  statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
-              - name: CircuitBreaker
-                args:
-                  id: notificationCircuitBreaker
-                  fallbackUri: forward:/fallback/notification-service
+            - id: ai-service
+              uri: lb://AI-SERVICE
+              predicates:
+                - Path=/api/v1/ai/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: aiCircuitBreaker
+                    fallbackUri: forward:/fallback/ai-service
+
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/v1/notification/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: notificationCircuitBreaker
+                    fallbackUri: forward:/fallback/notification-service
 
 server:
   port: ${SERVER_PORT:8080}
@@ -153,3 +152,5 @@ gateway:
     enabled: ${GATEWAY_RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE:5}
     redis-key-prefix: ${GATEWAY_RATE_LIMIT_KEY_PREFIX:gateway:rate-limit:}
+
+

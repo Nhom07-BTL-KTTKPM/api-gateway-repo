@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   application:
     name: api-gateway
   data:
@@ -150,7 +150,7 @@ gateway:
     allowed-origins: ${GATEWAY_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
   rate-limit:
     enabled: ${GATEWAY_RATE_LIMIT_ENABLED:true}
-    requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE:5}
+    requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE:60}
     redis-key-prefix: ${GATEWAY_RATE_LIMIT_KEY_PREFIX:gateway:rate-limit:}
 
 

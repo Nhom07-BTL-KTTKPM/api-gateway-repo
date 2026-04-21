@@ -60,6 +60,13 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Whitelist các endpoint vòng đời Auth Session — không đếm vào rate limit của Gateway
+        // (auth-service tự quản lý riêng cho /login và /register)
+        if (isAuthSessionEndpoint(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String identifier = resolveIdentifier(request);
         String redisKey = keyPrefix + identifier;
 
@@ -109,6 +116,18 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
         }
 
         return request.getRemoteAddr() == null ? "unknown" : request.getRemoteAddr();
+    }
+
+    /**
+     * Trả về true nếu đây là endpoint quản lý vòng đời Auth Session:
+     * /auth/refresh, /auth/me, /auth/logout
+     * Các endpoint này không nên bị đếm vào Gateway rate limit chung
+     * vì chúng cần gọi đều đặn khi user reload trang (session restore).
+     */
+    private static boolean isAuthSessionEndpoint(String path) {
+        return path.equals("/api/v1/auth/refresh")
+            || path.equals("/api/v1/auth/me")
+            || path.equals("/api/v1/auth/logout");
     }
 
     private static String resolveTraceId(HttpServletRequest request) {

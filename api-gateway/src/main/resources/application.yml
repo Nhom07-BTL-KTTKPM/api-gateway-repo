@@ -5,10 +5,10 @@ spring:
     name: api-gateway
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      timeout: ${REDIS_TIMEOUT:2s}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      timeout: ${REDIS_TIMEOUT}
   cloud:
     gateway:
       server:
@@ -130,16 +130,18 @@ spring:
                     fallbackUri: forward:/fallback/notification-service
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT}
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
   instance:
-    prefer-ip-address: true
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS}
+    ip-address: ${EUREKA_INSTANCE_IP_ADDRESS}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME}
 
 management:
   endpoints:
@@ -149,10 +151,10 @@ management:
 
 gateway:
   cors:
-    allowed-origins: ${GATEWAY_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    allowed-origins: ${GATEWAY_ALLOWED_ORIGINS}
   rate-limit:
-    enabled: ${GATEWAY_RATE_LIMIT_ENABLED:true}
-    requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE:60}
-    redis-key-prefix: ${GATEWAY_RATE_LIMIT_KEY_PREFIX:gateway:rate-limit:}
+    enabled: ${GATEWAY_RATE_LIMIT_ENABLED}
+    requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE}
+    redis-key-prefix: ${GATEWAY_RATE_LIMIT_KEY_PREFIX}
 
 

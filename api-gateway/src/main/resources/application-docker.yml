@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   cloud:
     gateway:
       server:
@@ -123,4 +123,14 @@ eureka:
   client:
     enabled: false
 
-
+resilience4j:
+  timelimiter:
+    instances:
+      aiCircuitBreaker:
+        timeoutDuration: 60s
+  circuitbreaker:
+    instances:
+      aiCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s

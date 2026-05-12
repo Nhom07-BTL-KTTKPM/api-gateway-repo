@@ -157,4 +157,14 @@ gateway:
     requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE}
     redis-key-prefix: ${GATEWAY_RATE_LIMIT_KEY_PREFIX}
 
-
+resilience4j:
+  timelimiter:
+    instances:
+      aiCircuitBreaker:
+        timeoutDuration: 60s
+  circuitbreaker:
+    instances:
+      aiCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s

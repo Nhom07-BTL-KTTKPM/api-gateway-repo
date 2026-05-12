@@ -42,7 +42,7 @@ spring:
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/v1/user/**
+                - Path=/api/v1/user/**,/api/v1/customers/**
               filters:
                 - name: Retry
                   args:
@@ -72,7 +72,7 @@ spring:
             - id: cart-service
               uri: lb://CART-SERVICE
               predicates:
-                - Path=/api/v1/cart/**
+                - Path=/api/v1/cart/**,/api/v1/carts/**
               filters:
                 - name: Retry
                   args:
@@ -87,7 +87,7 @@ spring:
             - id: order-service
               uri: lb://ORDER-SERVICE
               predicates:
-                - Path=/api/v1/order/**
+                - Path=/api/v1/order/**,/api/v1/orders/**
               filters:
                 - name: Retry
                   args:

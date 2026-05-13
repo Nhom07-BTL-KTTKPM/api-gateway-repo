@@ -34,7 +34,7 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
     @Value("${gateway.rate-limit.enabled:true}")
     private boolean enabled;
 
-    @Value("${gateway.rate-limit.requests-per-minute:200}")
+    @Value("${gateway.rate-limit.requests-per-minute:1000}")
     private long requestsPerMinute;
 
     @Value("${gateway.rate-limit.redis-key-prefix:gateway:rate-limit:}")

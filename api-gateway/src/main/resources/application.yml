@@ -129,6 +129,21 @@ spring:
                     id: notificationCircuitBreaker
                     fallbackUri: forward:/fallback/notification-service
 
+            - id: upload-service
+              uri: lb://UPLOAD-SERVICE
+              predicates:
+                - Path=/api/v1/upload/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET,POST
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: uploadCircuitBreaker
+                    fallbackUri: forward:/fallback/upload-service
+
 server:
   port: ${SERVER_PORT}
 
@@ -165,6 +180,10 @@ resilience4j:
   circuitbreaker:
     instances:
       aiCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      uploadCircuitBreaker:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s

@@ -99,6 +99,21 @@ spring:
                     id: orderCircuitBreaker
                     fallbackUri: forward:/fallback/order-service
 
+            - id: payment-service
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/v1/payment/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET,POST
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: paymentCircuitBreaker
+                    fallbackUri: forward:/fallback/payment-service
+
             - id: ai-service
               uri: lb://AI-SERVICE
               predicates:

@@ -134,11 +134,6 @@ spring:
               predicates:
                 - Path=/api/v1/upload/**
               filters:
-                - name: Retry
-                  args:
-                    retries: 3
-                    methods: GET,POST
-                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
                 - name: CircuitBreaker
                   args:
                     id: uploadCircuitBreaker
@@ -176,6 +171,8 @@ resilience4j:
   timelimiter:
     instances:
       aiCircuitBreaker:
+        timeoutDuration: 60s
+      uploadCircuitBreaker:
         timeoutDuration: 60s
   circuitbreaker:
     instances:

@@ -1,4 +1,7 @@
 spring:
+  mvc:
+    async:
+      request-timeout: 30s
   cloud:
     gateway:
       server:
@@ -172,14 +175,54 @@ eureka:
   client:
     enabled: false
 
+server:
+  tomcat:
+    connection-timeout: 5s
+
 resilience4j:
   timelimiter:
     instances:
+      authCircuitBreaker:
+        timeoutDuration: 10s
+      userCircuitBreaker:
+        timeoutDuration: 10s
+      catalogCircuitBreaker:
+        timeoutDuration: 10s
+      cartCircuitBreaker:
+        timeoutDuration: 10s
+      orderCircuitBreaker:
+        timeoutDuration: 15s
       aiCircuitBreaker:
         timeoutDuration: 60s
+      notificationCircuitBreaker:
+        timeoutDuration: 10s
   circuitbreaker:
     instances:
+      authCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      userCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      catalogCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      cartCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      orderCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
       aiCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      notificationCircuitBreaker:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s

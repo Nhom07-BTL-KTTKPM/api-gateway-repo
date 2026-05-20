@@ -127,6 +127,21 @@ spring:
                     id: orderCircuitBreaker
                     fallbackUri: forward:/fallback/order-service
 
+            - id: review-service
+              uri: http://review-service:8080
+              predicates:
+                - Path=/api/v1/review/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: reviewCircuitBreaker
+                    fallbackUri: forward:/fallback/review-service
+
             - id: ai-service
               uri: http://ai-service:8080
               predicates:

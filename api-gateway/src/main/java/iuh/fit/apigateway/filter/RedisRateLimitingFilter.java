@@ -34,7 +34,7 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
     @Value("${gateway.rate-limit.enabled:true}")
     private boolean enabled;
 
-    @Value("${gateway.rate-limit.requests-per-minute:5}")
+    @Value("${gateway.rate-limit.requests-per-minute:1000}")
     private long requestsPerMinute;
 
     @Value("${gateway.rate-limit.redis-key-prefix:gateway:rate-limit:}")
@@ -60,7 +60,8 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Whitelist các endpoint vòng đời Auth Session — không đếm vào rate limit của Gateway
+        // Whitelist các endpoint vòng đời Auth Session — không đếm vào rate limit của
+        // Gateway
         // (auth-service tự quản lý riêng cho /login và /register)
         if (isAuthSessionEndpoint(path)) {
             filterChain.doFilter(request, response);
@@ -82,17 +83,15 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
             response.setHeader(HttpHeaders.RETRY_AFTER, "60");
 
             ApiError error = new ApiError(
-                "RATE_LIMIT_EXCEEDED",
-                "Maximum %d requests per minute exceeded".formatted(requestsPerMinute),
-                Map.of("retryAfterSeconds", 60),
-                null
-            );
+                    "RATE_LIMIT_EXCEEDED",
+                    "Maximum %d requests per minute exceeded".formatted(requestsPerMinute),
+                    Map.of("retryAfterSeconds", 60),
+                    null);
 
             ApiResponse<Void> payload = ApiResponse.failure(
-                "Too many requests. Please retry after 1 minute.",
-                error,
-                resolveTraceId(request)
-            );
+                    "Too many requests. Please retry after 1 minute.",
+                    error,
+                    resolveTraceId(request));
 
             response.getWriter().write(objectMapper.writeValueAsString(payload));
             return;
@@ -126,8 +125,8 @@ public class RedisRateLimitingFilter extends OncePerRequestFilter {
      */
     private static boolean isAuthSessionEndpoint(String path) {
         return path.equals("/api/v1/auth/refresh")
-            || path.equals("/api/v1/auth/me")
-            || path.equals("/api/v1/auth/logout");
+                || path.equals("/api/v1/auth/me")
+                || path.equals("/api/v1/auth/logout");
     }
 
     private static String resolveTraceId(HttpServletRequest request) {

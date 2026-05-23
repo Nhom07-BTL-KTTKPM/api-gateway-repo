@@ -140,7 +140,7 @@ spring:
             - id: review-service
               uri: lb://REVIEW-SERVICE
               predicates:
-                - Path=/api/v1/review/**
+                - Method=POST,PUT,PATCH,DELETE
               filters:
                 - name: Retry
                   args:
@@ -291,6 +291,8 @@ resilience4j:
         timeoutDuration: 10s
       uploadCircuitBreaker:
         timeoutDuration: 120s
+      reviewCircuitBreaker:
+        timeoutDuration: 15s
   circuitbreaker:
     instances:
       authCircuitBreaker:
@@ -326,6 +328,10 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
       uploadCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      reviewCircuitBreaker:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s

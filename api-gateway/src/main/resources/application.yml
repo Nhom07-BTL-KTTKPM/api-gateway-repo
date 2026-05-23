@@ -140,14 +140,7 @@ spring:
             - id: review-service
               uri: lb://REVIEW-SERVICE
               predicates:
-                - Path=/api/v1/review/**
                 - Method=POST,PUT,PATCH,DELETE
-
-            - id: review-service-read
-              uri: lb://REVIEW-SERVICE
-              predicates:
-                - Path=/api/v1/review/**
-                - Method=GET
               filters:
                 - name: Retry
                   args:

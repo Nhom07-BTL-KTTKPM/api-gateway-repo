@@ -20,27 +20,38 @@ import java.util.Map;
 @Slf4j
 public class GatewayFallbackController {
 
-        @RequestMapping("/{service}")
-        public ResponseEntity<ApiResponse<Void>> fallback(@PathVariable String service, HttpServletRequest request) {
-                log.warn("Circuit breaker fallback triggered for service: {}", service);
+	@RequestMapping("/{service}")
+	public ResponseEntity<ApiResponse<Void>> fallback(@PathVariable String service, HttpServletRequest request) {
+		log.warn("Circuit breaker fallback triggered for service: {}", service);
+		
+		// Log all request attributes to find the exception cause
+		java.util.Enumeration<String> attributeNames = request.getAttributeNames();
+		while (attributeNames.hasMoreElements()) {
+			String name = attributeNames.nextElement();
+			Object value = request.getAttribute(name);
+			log.warn("Request Attribute: {} = {}", name, value);
+			if (value instanceof Throwable throwable) {
+				log.error("Exception cause: ", throwable);
+			}
+		}
 
-                ApiError error = new ApiError(
-                                "GATEWAY_FALLBACK",
-                                "Circuit breaker fallback from gateway",
-                                Map.of("service", service),
-                                null
-                );
+		ApiError error = new ApiError(
+				"GATEWAY_FALLBACK",
+				"Circuit breaker fallback from gateway",
+				Map.of("service", service),
+				null
+		);
 
-                ApiResponse<Void> payload = ApiResponse.failure(
-                                "Service temporarily unavailable",
-                                error,
-                                resolveTraceId(request)
-                );
+		ApiResponse<Void> payload = ApiResponse.failure(
+				"Service temporarily unavailable",
+				error,
+				resolveTraceId(request)
+		);
 
-                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(payload);
-        }
+		return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(payload);
+	}
 
         private static String resolveTraceId(HttpServletRequest request) {
                 if (request != null) {

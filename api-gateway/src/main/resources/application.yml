@@ -1,0 +1,354 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: api-gateway
+  mvc:
+    async:
+      request-timeout: 30s
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      timeout: ${REDIS_TIMEOUT}
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: auth-service-critical
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/v1/auth/login,/api/v1/auth/register,/api/v1/auth/refresh,/api/v1/auth/logout,/api/v1/auth/google
+
+            - id: auth-service-write
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/v1/auth/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/v1/auth/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                    backoff:
+                      firstBackoff: 1s
+                      maxBackoff: 5s
+                      factor: 2
+                      basedOnPreviousValue: false
+                - name: CircuitBreaker
+                  args:
+                    id: authCircuitBreaker
+                    fallbackUri: forward:/fallback/auth-service
+
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/user/**,/api/v1/customers/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: user-service-read
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/user/**,/api/v1/customers/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: userCircuitBreaker
+                    fallbackUri: forward:/fallback/user-service
+
+            - id: catalog-service
+              uri: lb://CATALOG-SERVICE
+              predicates:
+                - Path=/api/v1/catalog/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: catalog-service-read
+              uri: lb://CATALOG-SERVICE
+              predicates:
+                - Path=/api/v1/catalog/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: catalogCircuitBreaker
+                    fallbackUri: forward:/fallback/catalog-service
+
+            - id: cart-service
+              uri: lb://CART-SERVICE
+              predicates:
+                - Path=/api/v1/cart/**,/api/v1/carts/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: cart-service-read
+              uri: lb://CART-SERVICE
+              predicates:
+                - Path=/api/v1/cart/**,/api/v1/carts/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: cartCircuitBreaker
+                    fallbackUri: forward:/fallback/cart-service
+
+            - id: order-service
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/api/v1/order/**,/api/v1/orders/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: order-service-read
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/api/v1/order/**,/api/v1/orders/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: orderCircuitBreaker
+                    fallbackUri: forward:/fallback/order-service
+
+            - id: review-service
+              uri: lb://REVIEW-SERVICE
+              predicates:
+                - Path=/api/v1/review/**
+                - Method=POST,PUT,PATCH,DELETE
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: reviewCircuitBreaker
+                    fallbackUri: forward:/fallback/review-service
+
+            - id: review-service-read
+              uri: lb://REVIEW-SERVICE
+              predicates:
+                - Path=/api/v1/review/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: reviewCircuitBreaker
+                    fallbackUri: forward:/fallback/review-service
+
+            - id: payment-service
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/v1/payment/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: payment-service-read
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/v1/payment/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: paymentCircuitBreaker
+                    fallbackUri: forward:/fallback/payment-service
+
+            - id: ai-service
+              uri: lb://AI-SERVICE
+              predicates:
+                - Path=/api/v1/ai/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: ai-service-read
+              uri: lb://AI-SERVICE
+              predicates:
+                - Path=/api/v1/ai/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: aiCircuitBreaker
+                    fallbackUri: forward:/fallback/ai-service
+
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/v1/notification/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: notification-service-read
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/v1/notification/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: notificationCircuitBreaker
+                    fallbackUri: forward:/fallback/notification-service
+
+            - id: upload-service
+              uri: lb://UPLOAD-SERVICE
+              predicates:
+                - Path=/api/v1/upload/**
+                - Method=POST,PUT,PATCH,DELETE
+
+            - id: upload-service-read
+              uri: lb://UPLOAD-SERVICE
+              predicates:
+                - Path=/api/v1/upload/**
+                - Method=GET
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    statuses: BAD_GATEWAY,GATEWAY_TIMEOUT,INTERNAL_SERVER_ERROR
+                - name: CircuitBreaker
+                  args:
+                    id: uploadCircuitBreaker
+                    fallbackUri: forward:/fallback/upload-service
+
+server:
+  port: ${SERVER_PORT}
+  tomcat:
+    connection-timeout: 5s
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
+  instance:
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS}
+    ip-address: ${EUREKA_INSTANCE_IP_ADDRESS}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+gateway:
+  cors:
+    allowed-origins: ${GATEWAY_ALLOWED_ORIGINS}
+  rate-limit:
+    enabled: ${GATEWAY_RATE_LIMIT_ENABLED}
+    requests-per-minute: ${GATEWAY_RATE_LIMIT_REQUESTS_PER_MINUTE}
+    redis-key-prefix: ${GATEWAY_RATE_LIMIT_KEY_PREFIX}
+
+resilience4j:
+  timelimiter:
+    instances:
+      authCircuitBreaker:
+        timeoutDuration: 10s
+      userCircuitBreaker:
+        timeoutDuration: 10s
+      catalogCircuitBreaker:
+        timeoutDuration: 10s
+      cartCircuitBreaker:
+        timeoutDuration: 10s
+      orderCircuitBreaker:
+        timeoutDuration: 15s
+      paymentCircuitBreaker:
+        timeoutDuration: 30s
+      aiCircuitBreaker:
+        timeoutDuration: 60s
+      notificationCircuitBreaker:
+        timeoutDuration: 10s
+      uploadCircuitBreaker:
+        timeoutDuration: 120s
+      reviewCircuitBreaker:
+        timeoutDuration: 15s
+  circuitbreaker:
+    instances:
+      authCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      userCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      catalogCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      cartCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      orderCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      paymentCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      aiCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      notificationCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      uploadCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      reviewCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
